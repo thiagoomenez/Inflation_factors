@@ -38,11 +38,9 @@ switch a
         
         f = @(x)(descobrir_Na(x, anam) - Na);
         
-        cont = 1;
         while(f(vmsq) > 0)
             Na = Na + 1;
             f = @(x)(descobrir_Na(x, anam) - Na);
-            cont = cont + 1;
         end
         
         a1 = bisection(f, vmsq, 10e50);
@@ -60,7 +58,7 @@ switch a
         f = @(x)(fsum(x,vmsq, Na));
         
         auxc1 = 0.001;
-        auxc2 = 10e90;
+        auxc2 = 1;
         
         c1 = f(auxc1);
         c2 = f(auxc2);
@@ -74,10 +72,8 @@ switch a
                 c1 = f(auxc1);
             end
         end
-        
-        tic
+       
         gama = bisection(f, auxc1, auxc2);
-        toc
         
         alpha = compute_alpha(gama, vmsq, Na);
         N = Na;
@@ -88,17 +84,18 @@ switch a
         
         g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
         f = @(x)(norm(S*V'*g(x) - U'*y)^2);
-        
         em_f = @(x)(f(x) - sqrt(Nd));
+        
         alphaprime = bisection(em_f, 1e-5, 10e50);
         if(alphaprime > amax)
             alphaprime = amax;
         end
+        
         a1 = alphaprime - 1;
         
         while (a1 < alphaprime)
             gam = @(x)(fsum_em_f(x, anam, Na));
-            gama = bisection(gam, 0.0001, 1);
+            gama = bisection(gam, 1e-5, 1);
             a1 = anam*gama^(1 - Na);
             if (a1 < alphaprime)
                 Na = Na + 1;
@@ -123,8 +120,8 @@ switch a
         
         g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
         f = @(x)(norm(S*V'*g(x) - U'*y)^2);
-        
         em_f = @(x)(f(x) - sqrt(ng));
+        
         alphaprime = bisection(em_f, 1e-5, 10e50);
         if(alphaprime > amax)
             alphaprime = amax;
@@ -133,7 +130,7 @@ switch a
         
         while (a1 < alphaprime)
             gam = @(x)(fsum_em_f(x, anam, Na));
-            gama = bisection(gam, 0.0001, 1);
+            gama = bisection(gam, 1e-5, 1);
             a1 = anam*gama^(1 - Na);
             if (a1 < alphaprime)
                 Na = Na + 1;
