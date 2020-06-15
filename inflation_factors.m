@@ -109,13 +109,17 @@ switch a
         N = Na;
         
     case 6 % ES-MDA-GEO2 (mu_alpha)
-        amax = 10e5; Namax = 100;
+        amax = 10e5; Namax = 100; anamax = Na;
         
         anam = mean(v(end))^2;
         p = 1;
         while (anam <= 1.55)
             anam = mean(v(end-p:end))^2;
             p = p+1;
+        end
+        
+        if(anam > anamax)
+            anam = mu_alpha;
         end
         
         g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
