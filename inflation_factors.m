@@ -46,9 +46,7 @@ switch a
         a1 = bisection(f, vmsq, 10e50);
         gama = ( anam/a1 )^( 1/(Na - 1));
         alpha = zeros(Na, 1);
-        alpha(1) = a1;
-        
-        compute_alpha(gama, a1, Na);
+        alpha = compute_alpha(gama, a1, Na);
         N = Na;
         
     case 3 % ES-MDA-GEO1
