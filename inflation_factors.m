@@ -61,13 +61,10 @@ switch a
         c2 = f(auxc2);
         den = 2;
         
-        
-        if(c1*c2 > 0)
-            while (c1*c2 > 0)
-                auxc2 = auxc1;
-                auxc1 = auxc1/den;
-                c1 = f(auxc1);
-            end
+        while (c1*c2 > 0)
+            auxc2 = auxc1;
+            auxc1 = auxc1/den;
+            c1 = f(auxc1);
         end
        
         gama = bisection(f, auxc1, auxc2);
