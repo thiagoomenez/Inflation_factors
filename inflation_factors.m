@@ -78,7 +78,7 @@ switch a
         
         g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
         f = @(x)(norm(S*V'*g(x) - U'*y)^2);
-        em_f = @(x)(f(x) - sqrt(Nd));
+        em_f = @(x)(f(x) - Nd);
         
         alphaprime = bisection(em_f, 1e-5, 10e50);
         if(alphaprime > amax)
