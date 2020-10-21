@@ -1,15 +1,15 @@
-function [alpha, N, gama, v] = inflation_factors(a, Na, Ne, Nd, d, dobs, LCd)
+function [alpha, N, gama, v] = inflation_factors(a, Na, Ne, Nd, d, dobs, Cd)
 
 dD = (1/sqrt(Ne - 1))*(d - mean(d, 2));
 
-Gd = LCd*dD;
+Gd = sqrt(Cd)\dD;
 
 [U, S, V] = svd(Gd);
 v = diag(S);
 ng = rank(Gd);
 v = v(1:ng);
 
-y = LCd*(dobs - mean(d, 2));
+y = sqrt(Cd)\(dobs - mean(d, 2));
 
 switch a
     
