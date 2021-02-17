@@ -55,7 +55,7 @@ switch a
         
         g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
         f = @(x)(norm(Gd*g(x) - y)^2);
-        em_f = @(x)(f(x) - Nd*0.95);
+        em_f = @(x)(f(x) - tau*tau);
         
         alphaprime = -1;
         xteste = 10;
