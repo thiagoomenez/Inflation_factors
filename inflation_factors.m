@@ -53,8 +53,7 @@ switch a
     case 2 % ES-MDA-GEO2
         anam = 1.5; amax = 10e5; Namax = 100;
         
-        g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
-        f = @(x)(norm(Gd*g(x) - y)^2);
+        f = @(x)(norm(Gd*xa(x) - y)^2);
         em_f = @(x)(f(x) - tau*tau);
         
         alphaprime = -1;
@@ -135,8 +134,7 @@ switch a
             anam = mu_alpha;
         end
         
-        g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
-        f = @(x)(norm(Gd*g(x) - y)^2);
+        f = @(x)(norm(Gd*xa(x) - y)^2);
         em_f = @(x)(f(x) - tau*tau);
         
         alphaprime = -1;
