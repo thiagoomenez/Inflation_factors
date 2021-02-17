@@ -88,7 +88,6 @@ switch a
     case 3 % ES-MDA-GEO3
         anamax = Na;
         mu_alpha = 1.1;
-        rho = 0.5;
         vm = mean(v);
         vmsq = (rho/(1 - rho))*vm^2;
         
@@ -138,7 +137,7 @@ switch a
         
         g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
         f = @(x)(norm(Gd*g(x) - y)^2);
-        em_f = @(x)(f(x) - Nd*std(y)*0.05);
+        em_f = @(x)(f(x) - tau*tau);
         
         alphaprime = -1;
         xteste = 10;
