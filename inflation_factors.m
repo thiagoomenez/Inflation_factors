@@ -1,55 +1,33 @@
 function [alpha, N, gama, v] = inflation_factors(a, Na, Ne, Nd, d, dobs, Cd)
 
-dD = (1/sqrt(Ne - 1))*(d - mean(d, 2));
-
+dD = (1/sqrt(Ne))*(d - mean(d, 2));
+ 
 Gd = sqrt(Cd)\dD;
-
-[U, S, V] = svd(Gd);
+ 
+[~, S, ~] = svd(Gd);
 v = diag(S);
 ng = rank(Gd);
 v = v(1:ng);
-
+ 
 y = sqrt(Cd)\(dobs - mean(d, 2));
+xa = @(x)( (Gd'/(Gd*Gd' + x*eye(Nd)))*y );
+rho = 0.5;
+tau = sqrt(Nd);
+eta = 1;
+ 
+f1 = @(x)( norm(Gd*xa(x) - y) - tau*eta );
+f2 = @(x)( x*x*norm( (Gd*Gd' + x*eye(Nd))\y )^2 - rho*rho*norm(y)^2 );
+fsum = @(x, a, Na)((1 - 1/(x^Na))/(1 - 1/x) - a);
 
 switch a
     
-    case 1 % ES-MDA-EQL
+    case 0 % ES-MDA-EQL
         alpha = ones(Na, 1)*Na;
         N = Na;
         gama = 1;
         
-    case 2 % ES-MDA-GEO3
-        anamax = Na;
-        mu_alpha = 1.2;
-        rho = 0.5;
-        vm = mean(v);
-        vmsq = (rho/(1 - rho))*vm^2;
+    case 1 % ES-MDA-GEO1
         
-        anam = mean(v(end))^2;
-        p = 1;
-        while (anam <= mu_alpha)
-            anam = mean(v(end-p:end))^2;
-            p = p+1;
-        end
-        
-        if(anam > anamax)
-            anam = mu_alpha;
-        end
-        
-        f = @(x)(descobrir_Na(x, anam) - Na);
-        
-        while(f(vmsq) > 0)
-            Na = Na + 1;
-            f = @(x)(descobrir_Na(x, anam) - Na);
-        end
-        
-        a1 = bisection(f, vmsq, 10e50);
-        gama = ( anam/a1 )^( 1/(Na - 1));
-        alpha = compute_alpha(gama, a1, Na);
-        N = Na;
-        
-    case 3 % ES-MDA-GEO1
-        rho = 0.5;
         vm = mean(v);
         vmsq = (rho/(1 - rho))*vm^2;
         f = @(x)(fsum(x,vmsq, Na));
@@ -72,15 +50,20 @@ switch a
         alpha = compute_alpha(gama, vmsq, Na);
         N = Na;
         
-        
-    case 4 % ES-MDA-GEO2
+    case 2 % ES-MDA-GEO2
         anam = 1.5; amax = 10e5; Namax = 100;
         
-        g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
-        f = @(x)(norm(S*V'*g(x) - U'*y)^2);
-        em_f = @(x)(f(x) - Nd);
+        g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
+        f = @(x)(norm(Gd*g(x) - y)^2);
+        em_f = @(x)(f(x) - Nd*0.95);
         
-        alphaprime = bisection(em_f, 1e-5, 10e50);
+        alphaprime = -1;
+        xteste = 10;
+        while( alphaprime < 0)
+            alphaprime = fzero(em_f, xteste);
+            xteste = xteste*1.2;
+        end
+        
         if(alphaprime > amax)
             alphaprime = amax;
         end
@@ -102,12 +85,49 @@ switch a
         alpha = compute_alpha(gama, a1, Na);
         N = Na;
         
-    case 6 % ES-MDA-GEO2 (mu_alpha)
-        amax = 10e5; Namax = 100; anamax = Na;
+    case 3 % ES-MDA-GEO3
+        anamax = Na;
+        mu_alpha = 1.1;
+        rho = 0.5;
+        vm = mean(v);
+        vmsq = (rho/(1 - rho))*vm^2;
+        
+        if (v(end) > 1)
+            anam = mean(v(end))^2;
+        else
+            anam = mean(v(end))^2;
+            p = 1;
+            while (anam <= mu_alpha)
+                anam = mean(v(end-p:end))^2;
+                p = p+1;
+            end
+        end
+        
+        if(anam > anamax)
+            anam = mu_alpha;
+        end
+        
+        f = @(x)(descobrir_Na(x, anam) - Na);
+        
+        while(f(vmsq) > 0)
+            Na = Na + 1;
+            f = @(x)(descobrir_Na(x, anam) - Na);
+        end
+        
+        a1 = bisection(f, vmsq, 10e50);
+        gama = ( anam/a1 )^( 1/(Na - 1));
+        alpha = compute_alpha(gama, a1, Na);
+        N = Na;
+        
+        
+    case 4 % ES-MDA-GEO2 (mu_alpha)
+        Namax = 100; 
+        anamax = Na;
+        mu_alpha = 1.1;
         
         anam = mean(v(end))^2;
         p = 1;
-        while (anam <= 1.55)
+        while (anam <= mu_alpha)
             anam = mean(v(end-p:end))^2;
             p = p+1;
         end
@@ -116,14 +136,17 @@ switch a
             anam = mu_alpha;
         end
         
-        g = @(x)(V*(S'*S + x*eye(size(S'*S)))*S'*U'*y);
-        f = @(x)(norm(S*V'*g(x) - U'*y)^2);
-        em_f = @(x)(f(x) - sqrt(ng));
+        g = @(x)(Gd'*( (Gd*Gd' + x*eye(Nd))\y ));
+        f = @(x)(norm(Gd*g(x) - y)^2);
+        em_f = @(x)(f(x) - Nd*std(y)*0.05);
         
-        alphaprime = bisection(em_f, 1e-5, 10e50);
-        if(alphaprime > amax)
-            alphaprime = amax;
+        alphaprime = -1;
+        xteste = 10;
+        while( alphaprime < 0)
+            alphaprime = fzero(em_f, xteste);
+            xteste = xteste*1.2;
         end
+        
         a1 = alphaprime - 1;
         
         while (a1 < alphaprime)
@@ -140,7 +163,68 @@ switch a
         end
         alpha = compute_alpha(gama, a1, Na);
         N = Na;
+        
+    case 5 % alpha_1 = Hanke
+        
+        a1 = 1;
+        a2 = 100;
+        
+        while (f2(a1)*f2(a2) > 0)
+            a2 = a2*2;
+        end
+        
+        zerof2 = bisection(f2, a1, a2);
+        
+        gsum = @(x)(fsum(x, zerof2, Na));
+        xteste = 0.9;
+        gama = fzero(gsum, xteste);
+        
+        while (or(gama < 0, isnan(gama)))
+            xteste = xteste*0.9;
+            gama = fzero(gsum, xteste);
+        end
+        
+        alpha = ones(Na, 1);
+        alpha(1) = zerof2;
+        
+        for i = 2:Na
+            alpha(i) = alpha(i-1)*gama;
+        end
+        
+        N = Na;
+        
+    case 6 % alpha_1 = Discrepancy Principle
+        
+        a1 = 1;
+        a2 = 100;
+        
+        while (f1(a1)*f1(a2) > 0)
+            a2 = a2*2;
+        end
+        
+        zerof1 = bisection(f1, a1, a2);
+        
+        gsum = @(x)(fsum(x, zerof1, Na));
+        xteste = 0.9;
+        gama = fzero(gsum, xteste);
+        
+        while (or(gama < 0, isnan(gama)))
+            xteste = xteste*0.9;
+            gama = fzero(gsum, xteste);
+        end
+        
+        alpha = ones(Na, 1);
+        alpha(1) = zerof1;
+        
+        for i = 2:Na
+            alpha(i) = alpha(i-1)*gama;
+        end
+        
+        N = Na;
+        
 end
+
+
 end
 
 function p = bisection(f,a,b)
