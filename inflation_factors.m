@@ -90,7 +90,7 @@ switch a
         vm = mean(v);
         vmsq = (rho/(1 - rho))*vm^2;
         
-        if (v(end) > 1)
+        if (v(end) > mu_alpha)
             anam = mean(v(end))^2;
         else
             anam = mean(v(end))^2;
