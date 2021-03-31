@@ -91,12 +91,12 @@ switch a
         vmsq = (rho/(1 - rho))*vm^2;
         
         if (v(end) > mu_alpha)
-            anam = mean(v(end))^2;
+            anam = (rho/(1 - rho))*mean(v(end))^2;
         else
-            anam = mean(v(end))^2;
+            anam = (rho/(1 - rho))*mean(v(end))^2;
             p = 1;
             while (anam <= mu_alpha)
-                anam = mean(v(end-p:end))^2;
+                anam = (rho/(1 - rho))*mean(v(end-p:end))^2;
                 p = p+1;
             end
         end
